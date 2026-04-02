@@ -13,6 +13,7 @@ export function NavBar () {
           src='/logo.svg'
           alt='가천대학교 로고'
           width={140} height={40}
+          unoptimized
         />
       </div>
       <div className='flex gap-4 self-center '>
