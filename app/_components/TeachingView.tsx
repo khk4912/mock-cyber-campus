@@ -32,11 +32,8 @@ function LectureItem ({ lecture }: LectureItemProps) {
   )
 }
 
-type LectureViewProps = {
-  lectures: UserLecture[]
-}
-
-export function LectureView ({ lectures }: LectureViewProps) {
+type TeachingViewProps = { lectures: UserLecture[] }
+export function TeachingView ({ lectures }: TeachingViewProps) {
   return (
     <section
       className='flex flex-col flex-1
@@ -60,7 +57,7 @@ export function LectureView ({ lectures }: LectureViewProps) {
             )
           : (
             <div className='px-6 py-10 text-sm text-zinc-500'>
-              수강 중인 강의가 없습니다.
+              강의 중인 강의가 없습니다.
             </div>
             )}
       </div>
