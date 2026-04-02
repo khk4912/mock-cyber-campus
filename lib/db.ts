@@ -47,6 +47,11 @@ export type Assignment = {
   updatedAt: string
 }
 
+export type AssignmentInfo = Assignment & {
+  lectureTitle: string
+  lectureCode: string
+}
+
 type UserRow = {
   id: number
   username: string
@@ -412,4 +417,42 @@ export function getAssignments (lectureId: number) {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }))
+}
+
+export function getAssignmentInfo (lectureId: number, assignmentId: number) {
+  const row = db.prepare(`
+    SELECT
+      a.id,
+      a.lecture_id,
+      a.title,
+      a.description,
+      a.due_at,
+      a.created_at,
+      a.updated_at,
+      l.title AS lecture_title,
+      l.code AS lecture_code
+    FROM assignments AS a
+    JOIN lectures AS l
+      ON l.id = a.lecture_id
+    WHERE a.lecture_id = ? AND a.id = ?
+  `).get(lectureId, assignmentId) as (AssignmentRow & {
+    lecture_title: string
+    lecture_code: string
+  }) | undefined
+
+  if (!row) {
+    return null
+  }
+
+  return {
+    id: row.id,
+    lectureId: row.lecture_id,
+    title: row.title,
+    description: row.description,
+    dueAt: row.due_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    lectureTitle: row.lecture_title,
+    lectureCode: row.lecture_code,
+  }
 }

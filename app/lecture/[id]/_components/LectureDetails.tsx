@@ -15,13 +15,14 @@ type AssignmentProp = {
 
 function Assignment ({ lectureId, title, description, dueAt, id }: AssignmentProp) {
   return (
-    <Link href={`/lecture/${lectureId}/assignments/${id}`}>
+    <Link href={`/lecture/${lectureId}/assignment/${id}`}>
       <div className='flex cursor-pointer gap-4 py-8'>
         <Image
           src='/icons/assignment.svg'
           width={40}
           height={40}
           alt='Assignment icon'
+          className='w-auto h-auto'
           unoptimized
         />
         <div className='flex flex-col'>
@@ -49,8 +50,6 @@ export function LectureDetails ({ id }: { id: number }) {
     code: lectureCode,
     instructorName,
     description,
-    meetingLabel,
-    room,
   } = lecture
   const assignments = getAssignments(id)
 

@@ -22,7 +22,7 @@ export function NavBar ({ user }: NavBarProps) {
             alt='가천대학교 로고'
             width={140} height={40}
             className='w-auto h-auto'
-            unoptimized
+            loading='eager'
           />
         </Link>
       </div>
