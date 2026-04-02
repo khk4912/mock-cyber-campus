@@ -1,13 +1,11 @@
 import { Sidebar } from './_components/Sidebar'
+import { LectureView } from './_components/LectureView'
 
 export default function Home () {
   return (
     <>
       <Sidebar />
-      <section
-        className='flex flex-col flex-1
-                  bg-zinc-50 h-screen'
-      />
+      <LectureView />
     </>
   )
 }
