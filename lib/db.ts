@@ -2,11 +2,13 @@ import { mkdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
 
+export type UserRole = '학생' | '교수'
+
 export type MockUser = {
   id: number
   username: string
   displayName: string
-  role: string
+  role: UserRole
 }
 
 export type LectureMeeting = {
@@ -28,11 +30,28 @@ export type UserLecture = {
   meetingLabel: string
 }
 
+export type LectureInfo = UserLecture & {
+  description: string | null
+  instructorUsername: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type Assignment = {
+  id: number
+  lectureId: number
+  title: string
+  description: string | null
+  dueAt: string
+  createdAt: string
+  updatedAt: string
+}
+
 type UserRow = {
   id: number
   username: string
   display_name: string
-  role: string
+  role: UserRole
 }
 
 type LectureRow = {
@@ -49,6 +68,23 @@ type LectureRow = {
   end_period: number | null
 }
 
+type LectureInfoRow = LectureRow & {
+  description: string | null
+  instructor_username: string
+  created_at: string
+  updated_at: string
+}
+
+type AssignmentRow = {
+  id: number
+  lecture_id: number
+  title: string
+  description: string | null
+  due_at: string
+  created_at: string
+  updated_at: string
+}
+
 type GlobalWithDb = typeof globalThis & {
   __mockCampusDb?: DatabaseSync
 }
@@ -58,6 +94,7 @@ const SCHEMA_PATH = path.join(process.cwd(), 'db', 'schema.sql')
 const SEED_PATH = path.join(process.cwd(), 'db', 'seed.sql')
 const DAY_OF_WEEK_LABELS = ['', '월', '화', '수', '목', '금', '토', '일']
 const DB_SCHEMA_VERSION = 2
+const USER_ROLES: UserRole[] = ['학생', '교수']
 
 function mapUserRow (row: UserRow): MockUser {
   return {
@@ -66,6 +103,10 @@ function mapUserRow (row: UserRow): MockUser {
     displayName: row.display_name,
     role: row.role,
   }
+}
+
+function isUserRole (value: string): value is UserRole {
+  return USER_ROLES.includes(value as UserRole)
 }
 
 function formatMeetingLabel (meetings: LectureMeeting[]) {
@@ -152,6 +193,40 @@ export function getUserById (id: number) {
   `).get(id) as UserRow | undefined
 
   return row ? mapUserRow(row) : null
+}
+
+export function addUser (input: {
+  username: string
+  displayName: string
+  role: UserRole
+}) {
+  const username = input.username.trim()
+  const displayName = input.displayName.trim()
+
+  if (!username || !displayName) {
+    throw new Error('username and displayName are required')
+  }
+
+  if (!isUserRole(input.role)) {
+    throw new Error('invalid role')
+  }
+
+  db.prepare(`
+    INSERT INTO users (username, display_name, role)
+    VALUES (?, ?, ?)
+  `).run(username, displayName, input.role)
+
+  const row = db.prepare(`
+    SELECT id, username, display_name, role
+    FROM users
+    WHERE username = ?
+  `).get(username) as UserRow | undefined
+
+  if (!row) {
+    throw new Error('failed to create user')
+  }
+
+  return mapUserRow(row)
 }
 
 export function listCurrentTeachings (userID: number) {
@@ -243,5 +318,98 @@ function listLecturesByQuery (query: string, userId: number) {
   return Array.from(lectureMap.values()).map((lecture) => ({
     ...lecture,
     meetingLabel: formatMeetingLabel(lecture.meetings),
+  }))
+}
+
+export function getLectureInfo (lectureId: number) {
+  const rows = db.prepare(`
+    SELECT
+      l.id,
+      l.code,
+      l.title,
+      l.description,
+      l.instructor_user_id,
+      instructor.username AS instructor_username,
+      instructor.display_name AS instructor_name,
+      l.room,
+      l.semester,
+      l.credits,
+      l.created_at,
+      l.updated_at,
+      lm.day_of_week,
+      lm.start_period,
+      lm.end_period
+    FROM lectures AS l
+    JOIN users AS instructor
+      ON instructor.id = l.instructor_user_id
+    LEFT JOIN lecture_meetings AS lm
+      ON lm.lecture_id = l.id
+    WHERE l.id = ?
+    ORDER BY lm.day_of_week, lm.start_period
+  `).all(lectureId) as LectureInfoRow[]
+
+  const firstRow = rows[0]
+
+  if (!firstRow) {
+    return null
+  }
+
+  const meetings: LectureMeeting[] = []
+
+  for (const row of rows) {
+    if (
+      row.day_of_week !== null &&
+      row.start_period !== null &&
+      row.end_period !== null
+    ) {
+      meetings.push({
+        dayOfWeek: row.day_of_week,
+        startPeriod: row.start_period,
+        endPeriod: row.end_period,
+      })
+    }
+  }
+
+  return {
+    id: firstRow.id,
+    code: firstRow.code,
+    title: firstRow.title,
+    description: firstRow.description,
+    instructorUserId: firstRow.instructor_user_id,
+    instructorUsername: firstRow.instructor_username,
+    instructorName: firstRow.instructor_name,
+    room: firstRow.room,
+    semester: firstRow.semester,
+    credits: firstRow.credits,
+    createdAt: firstRow.created_at,
+    updatedAt: firstRow.updated_at,
+    meetings,
+    meetingLabel: formatMeetingLabel(meetings),
+  }
+}
+
+export function getAssignments (lectureId: number) {
+  const rows = db.prepare(`
+    SELECT
+      id,
+      lecture_id,
+      title,
+      description,
+      due_at,
+      created_at,
+      updated_at
+    FROM assignments
+    WHERE lecture_id = ?
+    ORDER BY due_at ASC, id ASC
+  `).all(lectureId) as AssignmentRow[]
+
+  return rows.map((row) => ({
+    id: row.id,
+    lectureId: row.lecture_id,
+    title: row.title,
+    description: row.description,
+    dueAt: row.due_at,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
   }))
 }

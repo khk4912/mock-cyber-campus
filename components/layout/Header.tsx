@@ -2,6 +2,7 @@ import Image from 'next/image'
 
 import { logout } from '@/app/actions'
 import type { MockUser } from '@/lib/db'
+import Link from 'next/link'
 
 type NavBarProps = {
   user: MockUser
@@ -15,13 +16,15 @@ export function NavBar ({ user }: NavBarProps) {
                 not-md:justify-center'
     >
       <div className='self-center not-md:hidden'>
-        <Image
-          src='/logo.svg'
-          alt='가천대학교 로고'
-          width={140} height={40}
-          className='w-auto h-auto'
-          unoptimized
-        />
+        <Link href='/'>
+          <Image
+            src='/logo.svg'
+            alt='가천대학교 로고'
+            width={140} height={40}
+            className='w-auto h-auto'
+            unoptimized
+          />
+        </Link>
       </div>
       <div className='flex gap-4 self-center '>
         <div className='flex gap-2 items-center'>

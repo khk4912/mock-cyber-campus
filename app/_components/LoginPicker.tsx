@@ -1,11 +1,12 @@
 import { loginAs } from '@/app/actions'
 import { listUsers } from '@/lib/db'
+import Link from 'next/link'
 
 export function LoginPicker () {
   const users = listUsers()
 
   return (
-    <section className='flex flex-1 items-center justify-center px-6 py-10'>
+    <section className='flex flex-1 flex-col items-center justify-center px-6 py-10 gap-10'>
       <div
         className='w-full max-w-3xl rounded-3xl border border-zinc-200
                   bg-white p-8 shadow-sm'
@@ -50,6 +51,12 @@ export function LoginPicker () {
           ))}
         </ul>
       </div>
+
+      <Link href='/debug/add_user'>
+        <button className='cursor-pointer'>
+          유저 추가하기
+        </button>
+      </Link>
     </section>
   )
 }
