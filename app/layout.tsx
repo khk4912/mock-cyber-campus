@@ -25,9 +25,11 @@ export default function RootLayout ({
       lang='ko'
       className={`${Pretendard.variable} h-full antialiased`}
     >
-      <body className='min-h-full flex flex-col'>
+      <body className='min-h-full flex-col'>
         <NavBar />
-        {children}
+        <main className='flex bg-zinc-50'>
+          {children}
+        </main>
       </body>
     </html>
   )

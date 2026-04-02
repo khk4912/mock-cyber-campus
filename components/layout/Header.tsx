@@ -3,7 +3,7 @@ import Image from 'next/image'
 export function NavBar () {
   return (
     <nav
-      className='fixed w-full h-15 flex justify-between
+      className='sticky top-0 w-full h-10 flex justify-between
                 bg-gachon-blue text-white
                 px-15 py-8
                 not-md:justify-center'
