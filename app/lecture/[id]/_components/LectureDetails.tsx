@@ -120,7 +120,7 @@ function WeekSection ({ group, lectureId }: { group: WeekGroup; lectureId: numbe
   return (
     <div className='flex flex-col'>
       <h2 className='text-lg font-semibold text-zinc-700 mt-4 mb-1'>{label}</h2>
-      <div className='flex flex-col divide-y divide-gray-200 my-2'>
+      <div className='flex flex-col my-2'>
         {group.items.map((item) => (
           <WeekItemRow
             key={item.kind === 'lecture' ? `lecture-${item.data.lmsLectureId}` : `assignment-${item.data.id}`}
