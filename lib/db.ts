@@ -805,6 +805,10 @@ export function listLmsAssignmentsByCourse (courseId: string) {
   }))
 }
 
+export function getLmsLectures (lectureId: number): LmsLectureSummary[] {
+  return listLmsLecturesByCourse(String(lectureId))
+}
+
 export function listLmsLecturesByCourse (courseId: string) {
   const rows = db.prepare(`
     SELECT
