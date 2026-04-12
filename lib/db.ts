@@ -1073,3 +1073,31 @@ export function getFreeTime (userId: string) {
     isPublic: parseDbBoolean(row.is_public),
   }
 }
+
+export function createLmsLecture (
+  courseId: number,
+  data: { title: string; content?: string; openedAt?: string; deadline?: string; linkUrl?: string }
+): void {
+  const { max } = db.prepare(
+    'SELECT MAX(CAST(lms_lec_id AS INTEGER)) AS max FROM lms_lectures'
+  ).get() as { max: number | null }
+  const nextId = String((max ?? 0) + 1)
+  db.prepare(`
+    INSERT INTO lms_lectures (lms_lec_id, course_id, title, content, opened_at, deadline, link_url, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `).run(nextId, String(courseId), data.title, data.content ?? null, data.openedAt ?? null, data.deadline ?? null, data.linkUrl ?? null)
+}
+
+export function createAssignment (
+  courseId: number,
+  data: { title: string; description?: string; deadline: string; linkUrl?: string }
+): void {
+  const { max } = db.prepare(
+    'SELECT MAX(CAST(lms_as_id AS INTEGER)) AS max FROM lms_assignments'
+  ).get() as { max: number | null }
+  const nextId = String((max ?? 0) + 1)
+  db.prepare(`
+    INSERT INTO lms_assignments (lms_as_id, course_id, title, description, deadline, link_url, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `).run(nextId, String(courseId), data.title, data.description ?? null, data.deadline, data.linkUrl ?? null)
+}

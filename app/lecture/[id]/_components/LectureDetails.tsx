@@ -3,8 +3,10 @@ import Link from 'next/link'
 
 import { getAssignments, getLectureInfo, getLmsLectures } from '@/lib/db'
 import type { LmsLectureSummary } from '@/lib/db'
-import { LectureError } from './LectureError'
 import { Sidebar } from '@/app/_components/Sidebar'
+import { AddAssignmentForm } from './AddAssignmentForm'
+import { AddLectureForm } from './AddLectureForm'
+import { LectureError } from './LectureError'
 
 type WeekItem =
   | { kind: 'lecture'; date: string | null; data: LmsLectureSummary }
@@ -70,7 +72,7 @@ function WeekItemRow ({ item, lectureId }: { item: WeekItem; lectureId: number }
     const inner = (
       <div className={ROW_CLASS}>
         <Image
-          src='/icons/tv.svg'
+          src='/icons/lecture.svg'
           width={40}
           height={40}
           alt='Lecture icon'
@@ -131,7 +133,7 @@ function WeekSection ({ group, lectureId }: { group: WeekGroup; lectureId: numbe
   )
 }
 
-export function LectureDetails ({ id }: { id: number }) {
+export function LectureDetails ({ id, isProf }: { id: number; isProf: boolean }) {
   const lecture = getLectureInfo(id)
 
   if (lecture === null) {
@@ -187,7 +189,15 @@ export function LectureDetails ({ id }: { id: number }) {
           </div>
 
           <div className='border border-gray-300 rounded-2xl bg-white py-10 px-10 flex flex-col'>
-            <h1 className='text-2xl font-bold'>주차 별 학습 활동</h1>
+            <div className='flex items-center justify-between mb-2'>
+              <h1 className='text-2xl font-bold'>주차 별 학습 활동</h1>
+              {isProf && (
+                <div className='flex gap-2'>
+                  <AddLectureForm lectureId={lecture.id} />
+                  <AddAssignmentForm lectureId={lecture.id} />
+                </div>
+              )}
+            </div>
             <div className='divide-y divide-zinc-300'>
               {weekGroups.length === 0
                 ? <p className='text-sm text-zinc-500 mt-4'>등록된 콘텐츠가 없습니다.</p>
