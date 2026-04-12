@@ -1,22 +1,98 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { getAssignments, getLectureInfo } from '@/lib/db'
+import { getAssignments, getLectureInfo, getLmsLectures } from '@/lib/db'
+import type { LmsLectureSummary } from '@/lib/db'
 import { LectureError } from './LectureError'
 import { Sidebar } from '@/app/_components/Sidebar'
 
-type AssignmentProp = {
-  lectureId: number
-  title: string
-  description: string
-  dueAt: string
-  id: number
+type WeekItem =
+  | { kind: 'lecture'; date: string | null; data: LmsLectureSummary }
+  | { kind: 'assignment'; date: string | null; data: ReturnType<typeof getAssignments>[number] }
+
+type WeekGroup = {
+  weekNumber: number | null
+  items: WeekItem[]
 }
 
-function Assignment ({ lectureId, title, description, dueAt, id }: AssignmentProp) {
+function groupItemsByWeek (
+  lectures: LmsLectureSummary[],
+  assignments: ReturnType<typeof getAssignments>
+): WeekGroup[] {
+  const WEEK_MS = 7 * 24 * 60 * 60 * 1000
+
+  const datedLectures = lectures.filter((l) => l.openedAt !== null)
+  const minTime = datedLectures.length > 0
+    ? Math.min(...datedLectures.map((l) => new Date(l.openedAt!).getTime()))
+    : null
+
+  const getWeek = (dateStr: string | null): number | null => {
+    if (dateStr === null || minTime === null) return null
+    return Math.floor((new Date(dateStr).getTime() - minTime) / WEEK_MS) + 1
+  }
+
+  const groups = new Map<number | null, WeekItem[]>()
+  const add = (week: number | null, item: WeekItem) => {
+    if (!groups.has(week)) groups.set(week, [])
+    groups.get(week)!.push(item)
+  }
+
+  for (const l of lectures) {
+    add(getWeek(l.openedAt), { kind: 'lecture', date: l.openedAt, data: l })
+  }
+  for (const a of assignments) {
+    add(getWeek(a.dueAt), { kind: 'assignment', date: a.dueAt, data: a })
+  }
+
+  for (const items of groups.values()) {
+    items.sort((a, b) => {
+      if (a.date === null && b.date === null) return 0
+      if (a.date === null) return 1
+      if (b.date === null) return -1
+      return new Date(a.date).getTime() - new Date(b.date).getTime()
+    })
+  }
+
+  const numbered = [...groups.entries()]
+    .filter(([k]) => k !== null)
+    .sort(([a], [b]) => (a as number) - (b as number))
+    .map(([weekNumber, items]) => ({ weekNumber, items }))
+
+  const undated = groups.has(null) ? [{ weekNumber: null, items: groups.get(null)! }] : []
+  return [...numbered, ...undated]
+}
+
+function WeekItemRow ({ item, lectureId }: { item: WeekItem; lectureId: number }) {
+  if (item.kind === 'lecture') {
+    const { title, content, deadline, linkUrl } = item.data
+    const inner = (
+      <div className='flex cursor-pointer gap-4 py-4 hover:bg-gray-100 transition-colors rounded-2xl px-2'>
+        <Image
+          src='/icons/lecture.svg'
+          width={40}
+          height={40}
+          alt='Lecture icon'
+          className='w-auto h-auto'
+          unoptimized
+        />
+        <div className='flex flex-col'>
+          <h3 className='font-semibold'>{title}</h3>
+          <span className='max-w-80 text-sm truncate text-zinc-500'>{content ?? ''}</span>
+        </div>
+        {deadline && (
+          <span className='text-sm text-red-500 self-center ml-5'>(~ {deadline})</span>
+        )}
+      </div>
+    )
+    return linkUrl
+      ? <a href={linkUrl} target='_blank' rel='noreferrer'>{inner}</a>
+      : <div>{inner}</div>
+  }
+
+  const { title, description, dueAt, id } = item.data
   return (
     <Link href={`/lecture/${lectureId}/assignment/${id}`}>
-      <div className='flex cursor-pointer gap-4 py-8'>
+      <div className='flex cursor-pointer gap-4 py-4 hover:bg-gray-100 transition-colors rounded-2xl px-2'>
         <Image
           src='/icons/assignment.svg'
           width={40}
@@ -26,15 +102,26 @@ function Assignment ({ lectureId, title, description, dueAt, id }: AssignmentPro
           unoptimized
         />
         <div className='flex flex-col'>
-          <h3 className='font-semibold text-lg'>{title}</h3>
-          <span className='max-w-80 truncate text-zinc-500'>{description}</span>
+          <h3 className='font-semibold text-base'>{title}</h3>
+          <span className='max-w-80 text-sm truncate text-zinc-500'>{description ?? ''}</span>
         </div>
-        <span
-          className='text-sm text-red-500 self-center ml-5'
-        >(~ {dueAt})
-        </span>
+        <span className='text-sm text-red-500 self-center ml-5'>(~ {dueAt})</span>
       </div>
     </Link>
+  )
+}
+
+function WeekSection ({ group, lectureId }: { group: WeekGroup; lectureId: number }) {
+  const label = group.weekNumber !== null ? `${group.weekNumber}주차` : '날짜 미정'
+  return (
+    <div className='flex flex-col'>
+      <h2 className='text-lg font-semibold text-zinc-700 mt-4 mb/-1'>{label}</h2>
+      <div className='flex flex-col divide-y divide-gray-200 my-2'>
+        {group.items.map((item, i) => (
+          <WeekItemRow key={i} item={item} lectureId={lectureId} />
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -51,7 +138,10 @@ export function LectureDetails ({ id }: { id: number }) {
     instructorName,
     description,
   } = lecture
+
+  const lmsLectures = getLmsLectures(id)
   const assignments = getAssignments(id)
+  const weekGroups = groupItemsByWeek(lmsLectures, assignments)
 
   return (
     <>
@@ -82,7 +172,7 @@ export function LectureDetails ({ id }: { id: number }) {
           </div>
         </header>
 
-        <main className='py-10 px-10'>
+        <main className='py-10 px-10 flex flex-col gap-6'>
           <div className='mb-6 rounded-2xl border border-gray-300 bg-white px-10 py-8'>
             <h2 className='mb-3 text-2xl font-bold'>강의 소개</h2>
             <p className='text-sm leading-7 text-zinc-600'>
@@ -91,23 +181,13 @@ export function LectureDetails ({ id }: { id: number }) {
           </div>
 
           <div className='border border-gray-300 rounded-2xl bg-white py-10 px-10 flex flex-col'>
-            <h1 className='text-2xl font-bold'>
-              주차 별 학습 활동 (과제)
-            </h1>
-            <div className='flex flex-col divide-y divide-gray-300'>
-              {assignments.map((val) => {
-                const { title, description, dueAt, id } = val
-                return (
-                  <Assignment
-                    key={id}
-                    lectureId={lecture.id}
-                    title={title}
-                    description={description ?? ''}
-                    dueAt={dueAt}
-                    id={id}
-                  />
-                )
-              })}
+            <h1 className='text-2xl font-bold'>주차 별 학습 활동</h1>
+            <div className='divide-y divide-zinc-300'>
+              {weekGroups.length === 0
+                ? <p className='text-sm text-zinc-500 mt-4'>등록된 콘텐츠가 없습니다.</p>
+                : weekGroups.map((group) => (
+                  <WeekSection key={group.weekNumber ?? 'undated'} group={group} lectureId={lecture.id} />
+                ))}
             </div>
           </div>
         </main>
