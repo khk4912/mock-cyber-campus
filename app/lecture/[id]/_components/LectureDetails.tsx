@@ -119,8 +119,8 @@ function WeekSection ({ group, lectureId }: { group: WeekGroup; lectureId: numbe
   const label = group.weekNumber !== null ? `${group.weekNumber}주차` : '날짜 미정'
   return (
     <div className='flex flex-col'>
-      <h2 className='text-lg font-semibold text-zinc-700 mt-4 mb-1'>{label}</h2>
-      <div className='flex flex-col my-2'>
+      <h2 className='font-bold mt-4'>{label}</h2>
+      <div className='flex flex-col my-2 ml-1'>
         {group.items.map((item) => (
           <WeekItemRow
             key={item.kind === 'lecture' ? `lecture-${item.data.lmsLectureId}` : `assignment-${item.data.id}`}
@@ -198,7 +198,7 @@ export function LectureDetails ({ id, isProf }: { id: number; isProf: boolean })
                 </div>
               )}
             </div>
-            <div className='divide-y divide-zinc-300'>
+            <div className='divide-y divide-zinc-200'>
               {weekGroups.length === 0
                 ? <p className='text-sm text-zinc-500 mt-4'>등록된 콘텐츠가 없습니다.</p>
                 : weekGroups.map((group) => (
