@@ -48,7 +48,7 @@ export function LectureView ({ lectures }: LectureViewProps) {
                   px-10 py-12 gap-6'
     >
       <div className='flex gap-3'>
-        <Image src='/icons/lecture.svg' alt='강좌 아이콘' width={20} height={20} className='w-8 h-auto' unoptimized />
+        <Image src='/icons/tv.svg' alt='강좌 아이콘' width={20} height={20} className='w-8 h-auto' unoptimized />
         <h1 className='font-extrabold text-3xl'>강좌 전체보기</h1>
       </div>
       <div className='rounded-2xl border border-gray-300 bg-white
