@@ -62,13 +62,15 @@ function groupItemsByWeek (
   return [...numbered, ...undated]
 }
 
+const ROW_CLASS = 'flex cursor-pointer gap-4 py-4 hover:bg-gray-100 transition-colors rounded-2xl px-2'
+
 function WeekItemRow ({ item, lectureId }: { item: WeekItem; lectureId: number }) {
   if (item.kind === 'lecture') {
     const { title, content, deadline, linkUrl } = item.data
     const inner = (
-      <div className='flex cursor-pointer gap-4 py-4 hover:bg-gray-100 transition-colors rounded-2xl px-2'>
+      <div className={ROW_CLASS}>
         <Image
-          src='/icons/lecture.svg'
+          src='/icons/tv.svg'
           width={40}
           height={40}
           alt='Lecture icon'
@@ -92,7 +94,7 @@ function WeekItemRow ({ item, lectureId }: { item: WeekItem; lectureId: number }
   const { title, description, dueAt, id } = item.data
   return (
     <Link href={`/lecture/${lectureId}/assignment/${id}`}>
-      <div className='flex cursor-pointer gap-4 py-4 hover:bg-gray-100 transition-colors rounded-2xl px-2'>
+      <div className={ROW_CLASS}>
         <Image
           src='/icons/assignment.svg'
           width={40}
@@ -102,7 +104,7 @@ function WeekItemRow ({ item, lectureId }: { item: WeekItem; lectureId: number }
           unoptimized
         />
         <div className='flex flex-col'>
-          <h3 className='font-semibold text-base'>{title}</h3>
+          <h3 className='font-semibold'>{title}</h3>
           <span className='max-w-80 text-sm truncate text-zinc-500'>{description ?? ''}</span>
         </div>
         <span className='text-sm text-red-500 self-center ml-5'>(~ {dueAt})</span>
@@ -115,10 +117,14 @@ function WeekSection ({ group, lectureId }: { group: WeekGroup; lectureId: numbe
   const label = group.weekNumber !== null ? `${group.weekNumber}주차` : '날짜 미정'
   return (
     <div className='flex flex-col'>
-      <h2 className='text-lg font-semibold text-zinc-700 mt-4 mb/-1'>{label}</h2>
+      <h2 className='text-lg font-semibold text-zinc-700 mt-4 mb-1'>{label}</h2>
       <div className='flex flex-col divide-y divide-gray-200 my-2'>
-        {group.items.map((item, i) => (
-          <WeekItemRow key={i} item={item} lectureId={lectureId} />
+        {group.items.map((item) => (
+          <WeekItemRow
+            key={item.kind === 'lecture' ? `lecture-${item.data.lmsLectureId}` : `assignment-${item.data.id}`}
+            item={item}
+            lectureId={lectureId}
+          />
         ))}
       </div>
     </div>
