@@ -1,11 +1,12 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { getAssignments, getLectureInfo, getLmsLectures } from '@/lib/db'
-import type { LmsLectureSummary } from '@/lib/db'
+import { getAssignments, getLectureInfo, getLmsLectures, listLmsNoticesByCourse } from '@/lib/db'
+import type { LmsLectureSummary, LmsNoticeSummary } from '@/lib/db'
 import { Sidebar } from '@/app/_components/Sidebar'
 import { AddAssignmentForm } from './AddAssignmentForm'
 import { AddLectureForm } from './AddLectureForm'
+import { AddNoticeForm } from './AddNoticeForm'
 import { LectureError } from './LectureError'
 
 type WeekItem =
@@ -133,6 +134,24 @@ function WeekSection ({ group, lectureId }: { group: WeekGroup; lectureId: numbe
   )
 }
 
+function NoticeRow ({ notice }: { notice: LmsNoticeSummary }) {
+  const inner = (
+    <div className='flex flex-col gap-1 rounded-2xl px-3 py-4 transition-colors hover:bg-gray-100'>
+      <div className='flex items-center justify-between gap-4'>
+        <h3 className='font-semibold text-zinc-900'>{notice.title}</h3>
+        <span className='shrink-0 text-sm text-zinc-500'>{notice.postedAt}</span>
+      </div>
+      <p className='line-clamp-2 text-sm leading-6 text-zinc-600'>
+        {notice.content ?? '내용이 없습니다.'}
+      </p>
+    </div>
+  )
+
+  return notice.linkUrl
+    ? <a href={notice.linkUrl} target='_blank' rel='noreferrer'>{inner}</a>
+    : inner
+}
+
 export function LectureDetails ({ id, isProf }: { id: number; isProf: boolean }) {
   const lecture = getLectureInfo(id)
 
@@ -149,6 +168,7 @@ export function LectureDetails ({ id, isProf }: { id: number; isProf: boolean })
 
   const lmsLectures = getLmsLectures(id)
   const assignments = getAssignments(id)
+  const notices = listLmsNoticesByCourse(String(id))
   const weekGroups = groupItemsByWeek(lmsLectures, assignments)
 
   return (
@@ -186,6 +206,20 @@ export function LectureDetails ({ id, isProf }: { id: number; isProf: boolean })
             <p className='text-sm leading-7 text-zinc-600'>
               {description ?? '등록된 강의 설명이 없습니다.'}
             </p>
+          </div>
+
+          <div className='rounded-2xl border border-gray-300 bg-white px-10 py-8'>
+            <div className='mb-3 flex items-center justify-between gap-4'>
+              <h2 className='text-2xl font-bold'>공지사항</h2>
+              {isProf && <AddNoticeForm lectureId={lecture.id} />}
+            </div>
+            <div className='divide-y divide-zinc-200'>
+              {notices.length === 0
+                ? <p className='text-sm text-zinc-500'>등록된 공지가 없습니다.</p>
+                : notices.map((notice) => (
+                  <NoticeRow key={notice.noticeId} notice={notice} />
+                ))}
+            </div>
           </div>
 
           <div className='border border-gray-300 rounded-2xl bg-white py-10 px-10 flex flex-col'>

@@ -1077,7 +1077,7 @@ export function getFreeTime (userId: string) {
 export function createLmsLecture (
   courseId: number,
   data: { title: string; content?: string; openedAt?: string; deadline?: string; linkUrl?: string }
-): void {
+): LmsLectureSummary {
   const { max } = db.prepare(
     'SELECT MAX(CAST(lms_lec_id AS INTEGER)) AS max FROM lms_lectures'
   ).get() as { max: number | null }
@@ -1086,12 +1086,22 @@ export function createLmsLecture (
     INSERT INTO lms_lectures (lms_lec_id, course_id, title, content, opened_at, deadline, link_url, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
   `).run(nextId, String(courseId), data.title, data.content ?? null, data.openedAt ?? null, data.deadline ?? null, data.linkUrl ?? null)
+
+  return {
+    lmsLectureId: nextId,
+    courseId: String(courseId),
+    title: data.title,
+    content: data.content ?? null,
+    openedAt: data.openedAt ?? null,
+    deadline: data.deadline ?? null,
+    linkUrl: data.linkUrl ?? null,
+  }
 }
 
 export function createAssignment (
   courseId: number,
   data: { title: string; description?: string; deadline: string; linkUrl?: string }
-): void {
+): Assignment {
   const { max } = db.prepare(
     'SELECT MAX(CAST(lms_as_id AS INTEGER)) AS max FROM lms_assignments'
   ).get() as { max: number | null }
@@ -1100,4 +1110,40 @@ export function createAssignment (
     INSERT INTO lms_assignments (lms_as_id, course_id, title, description, deadline, link_url, created_at, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
   `).run(nextId, String(courseId), data.title, data.description ?? null, data.deadline, data.linkUrl ?? null)
+
+  return {
+    id: toLegacyId(nextId),
+    lectureId: courseId,
+    title: data.title,
+    description: data.description ?? null,
+    dueAt: data.deadline,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    linkUrl: data.linkUrl ?? null,
+  }
+}
+
+export function createNotice (
+  courseId: number,
+  data: { title: string; content: string; postedAt?: string; linkUrl?: string }
+): LmsNoticeSummary {
+  const { max } = db.prepare(
+    'SELECT MAX(CAST(notice_id AS INTEGER)) AS max FROM lms_notices'
+  ).get() as { max: number | null }
+  const nextId = String((max ?? 0) + 1)
+  const postedAt = data.postedAt ?? new Date().toISOString()
+
+  db.prepare(`
+    INSERT INTO lms_notices (notice_id, course_id, title, content, posted_at, link_url, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+  `).run(nextId, String(courseId), data.title, data.content, postedAt, data.linkUrl ?? null)
+
+  return {
+    noticeId: nextId,
+    courseId: String(courseId),
+    title: data.title,
+    content: data.content,
+    postedAt,
+    linkUrl: data.linkUrl ?? null,
+  }
 }

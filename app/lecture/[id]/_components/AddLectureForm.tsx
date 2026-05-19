@@ -50,12 +50,12 @@ export function AddLectureForm ({ lectureId }: { lectureId: number }) {
           </div>
           <div className='grid grid-cols-2 gap-3'>
             <div className='flex flex-col gap-1'>
-              <label className={LABEL_CLASS} htmlFor='lec-openedAt'>공개일</label>
-              <input className={INPUT_CLASS} id='lec-openedAt' name='openedAt' type='datetime-local' />
+              <label className={LABEL_CLASS} htmlFor='lec-openedAt'>공개일 *</label>
+              <input className={INPUT_CLASS} id='lec-openedAt' name='openedAt' required type='datetime-local' />
             </div>
             <div className='flex flex-col gap-1'>
-              <label className={LABEL_CLASS} htmlFor='lec-deadline'>마감일</label>
-              <input className={INPUT_CLASS} id='lec-deadline' name='deadline' type='datetime-local' />
+              <label className={LABEL_CLASS} htmlFor='lec-deadline'>마감일 *</label>
+              <input className={INPUT_CLASS} id='lec-deadline' name='deadline' required type='datetime-local' />
             </div>
           </div>
           <div className='flex flex-col gap-1'>
