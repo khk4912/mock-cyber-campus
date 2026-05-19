@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { getAssignments, getLectureInfo, getLmsLectures, listLmsNoticesByCourse } from '@/lib/db'
-import type { LmsLectureSummary, LmsNoticeSummary } from '@/lib/db'
+import type { Assignment, LmsLectureSummary, LmsNoticeSummary } from '@/lib/db'
 import { Sidebar } from '@/app/_components/Sidebar'
 import { AddAssignmentForm } from './AddAssignmentForm'
 import { AddLectureForm } from './AddLectureForm'
@@ -11,7 +11,7 @@ import { LectureError } from './LectureError'
 
 type WeekItem =
   | { kind: 'lecture'; date: string | null; data: LmsLectureSummary }
-  | { kind: 'assignment'; date: string | null; data: ReturnType<typeof getAssignments>[number] }
+  | { kind: 'assignment'; date: string | null; data: Assignment }
 
 type WeekGroup = {
   weekNumber: number | null
@@ -20,7 +20,7 @@ type WeekGroup = {
 
 function groupItemsByWeek (
   lectures: LmsLectureSummary[],
-  assignments: ReturnType<typeof getAssignments>
+  assignments: Assignment[]
 ): WeekGroup[] {
   const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -152,8 +152,8 @@ function NoticeRow ({ notice }: { notice: LmsNoticeSummary }) {
     : inner
 }
 
-export function LectureDetails ({ id, isProf }: { id: number; isProf: boolean }) {
-  const lecture = getLectureInfo(id)
+export async function LectureDetails ({ id, isProf }: { id: number; isProf: boolean }) {
+  const lecture = await getLectureInfo(id)
 
   if (lecture === null) {
     return <LectureError message='알 수 없는 강좌 ID입니다.' />
@@ -166,9 +166,11 @@ export function LectureDetails ({ id, isProf }: { id: number; isProf: boolean })
     description,
   } = lecture
 
-  const lmsLectures = getLmsLectures(id)
-  const assignments = getAssignments(id)
-  const notices = listLmsNoticesByCourse(String(id))
+  const [lmsLectures, assignments, notices] = await Promise.all([
+    getLmsLectures(id),
+    getAssignments(id),
+    listLmsNoticesByCourse(String(id)),
+  ])
   const weekGroups = groupItemsByWeek(lmsLectures, assignments)
 
   return (

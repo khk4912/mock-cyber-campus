@@ -4,10 +4,9 @@ import { addUser, listUsers, type UserRole } from '@/lib/db'
 
 const roleOptions: UserRole[] = ['학생', '교수']
 
-export default function AddUserDebugPage () {
-  const users = listUsers()
+export default async function AddUserDebugPage () {
+  const users = await listUsers()
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async function createUser (formData: FormData) {
     'use server'
 
@@ -24,7 +23,7 @@ export default function AddUserDebugPage () {
       throw new Error('invalid form data')
     }
 
-    addUser({
+    await addUser({
       username: usernameValue,
       displayName: displayNameValue,
       role: roleValue as UserRole,

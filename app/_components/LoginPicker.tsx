@@ -2,8 +2,8 @@ import { loginAs } from '@/app/actions'
 import { listUsers } from '@/lib/db'
 import Link from 'next/link'
 
-export function LoginPicker () {
-  const users = listUsers()
+export async function LoginPicker () {
+  const users = await listUsers()
 
   return (
     <section className='flex flex-1 flex-col items-center justify-center px-6 py-10 gap-10'>

@@ -13,7 +13,7 @@ export default async function Home () {
   }
 
   if (currentUser.role === '교수') {
-    const teachings = listCurrentTeachings(currentUser.id)
+    const teachings = await listCurrentTeachings(currentUser.id)
 
     return (
       <>
@@ -23,7 +23,7 @@ export default async function Home () {
     )
   }
 
-  const lectures = listLecturesForUser(currentUser.id)
+  const lectures = await listLecturesForUser(currentUser.id)
   return (
     <>
       <Sidebar />

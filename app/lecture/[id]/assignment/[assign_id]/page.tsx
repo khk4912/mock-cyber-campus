@@ -32,13 +32,13 @@ export default async function AssignmentPage ({ params }: AssignmentPageProps) {
     return <LectureError message='잘못된 과제 ID입니다.' />
   }
 
-  const lecture = getLectureInfo(lectureId)
+  const lecture = await getLectureInfo(lectureId)
 
   if (!lecture) {
     return <LectureError message='존재하지 않는 강좌입니다.' />
   }
 
-  const assignment = getAssignmentInfo(lectureId, assignmentId)
+  const assignment = await getAssignmentInfo(lectureId, assignmentId)
 
   if (!assignment) {
     return <LectureError message='존재하지 않는 과제입니다.' />

@@ -12,7 +12,7 @@ export async function loginAs (formData: FormData) {
   const rawUserId = formData.get('userId')
   const userId = Number(rawUserId)
 
-  if (!Number.isInteger(userId) || !getUserById(userId)) {
+  if (!Number.isInteger(userId) || !await getUserById(userId)) {
     redirect('/')
   }
 

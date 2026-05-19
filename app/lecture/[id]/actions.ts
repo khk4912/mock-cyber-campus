@@ -3,7 +3,6 @@
 import { revalidatePath } from 'next/cache'
 
 import { getCurrentUser } from '@/lib/auth'
-import { syncCampusAssignment, syncCampusNotice, syncCampusVod } from '@/lib/campus'
 import { createAssignment, createLmsLecture, createNotice } from '@/lib/db'
 
 const NOTICE_TYPES = ['urgent', 'exam', 'makeup', 'etc'] as const
@@ -37,22 +36,12 @@ export async function addLmsLecture (lectureId: number, formData: FormData) {
     return typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined
   }
 
-  const lecture = createLmsLecture(lectureId, {
+  await createLmsLecture(lectureId, {
     title: title.trim(),
     content: getStr('content'),
     openedAt: openedAt.trim(),
     deadline: deadline.trim(),
     linkUrl: getStr('linkUrl'),
-  })
-
-  await syncCampusVod({
-    lectureId: lecture.courseId,
-    vodId: lecture.lmsLectureId,
-    title: lecture.title,
-    content: lecture.content ?? undefined,
-    uploadAt: lecture.openedAt ?? openedAt.trim(),
-    dueAt: lecture.deadline ?? deadline.trim(),
-    url: lecture.linkUrl ?? undefined,
   })
 
   revalidatePath(`/lecture/${lectureId}`)
@@ -75,20 +64,11 @@ export async function addAssignment (lectureId: number, formData: FormData) {
     return typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined
   }
 
-  const assignment = createAssignment(lectureId, {
+  await createAssignment(lectureId, {
     title: title.trim(),
     description: getStr('description'),
     deadline: deadline.trim(),
     linkUrl: getStr('linkUrl'),
-  })
-
-  await syncCampusAssignment({
-    lectureId: String(lectureId),
-    assignmentId: String(assignment.id),
-    title: assignment.title,
-    description: assignment.description ?? undefined,
-    dueAt: assignment.dueAt,
-    link: assignment.linkUrl ?? undefined,
   })
 
   revalidatePath(`/lecture/${lectureId}`)
@@ -116,20 +96,12 @@ export async function addNotice (lectureId: number, formData: FormData) {
     return typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined
   }
 
-  const notice = createNotice(lectureId, {
+  await createNotice(lectureId, {
     title: title.trim(),
     content: content.trim(),
     postedAt: getStr('postedAt'),
     linkUrl: getStr('linkUrl'),
-  })
-
-  await syncCampusNotice({
-    lectureId: notice.courseId,
-    noticeId: notice.noticeId,
-    title: notice.title,
-    content: notice.content ?? '',
     type: type as NoticeType,
-    createdAt: notice.postedAt,
   })
 
   revalidatePath(`/lecture/${lectureId}`)
