@@ -25,6 +25,7 @@
 *.pem
 data/*.sqlite
 data/*.sqlite-*
+firebase
 
 # debug
 npm-debug.log*
