@@ -13,10 +13,12 @@ async function assertProfessor () {
   if (user?.role !== '교수') {
     throw new Error('교수만 이 작업을 수행할 수 있습니다.')
   }
+
+  return user
 }
 
 export async function addLmsLecture (lectureId: number, formData: FormData) {
-  await assertProfessor()
+  const user = await assertProfessor()
 
   const title = formData.get('title')
   const openedAt = formData.get('openedAt')
@@ -36,7 +38,7 @@ export async function addLmsLecture (lectureId: number, formData: FormData) {
     return typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined
   }
 
-  await createLmsLecture(lectureId, {
+  await createLmsLecture(user.uid, lectureId, {
     title: title.trim(),
     content: getStr('content'),
     openedAt: openedAt.trim(),
@@ -48,7 +50,7 @@ export async function addLmsLecture (lectureId: number, formData: FormData) {
 }
 
 export async function addAssignment (lectureId: number, formData: FormData) {
-  await assertProfessor()
+  const user = await assertProfessor()
 
   const title = formData.get('title')
   const deadline = formData.get('deadline')
@@ -64,7 +66,7 @@ export async function addAssignment (lectureId: number, formData: FormData) {
     return typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined
   }
 
-  await createAssignment(lectureId, {
+  await createAssignment(user.uid, lectureId, {
     title: title.trim(),
     description: getStr('description'),
     deadline: deadline.trim(),
@@ -75,7 +77,7 @@ export async function addAssignment (lectureId: number, formData: FormData) {
 }
 
 export async function addNotice (lectureId: number, formData: FormData) {
-  await assertProfessor()
+  const user = await assertProfessor()
 
   const title = formData.get('title')
   const content = formData.get('content')
@@ -96,7 +98,7 @@ export async function addNotice (lectureId: number, formData: FormData) {
     return typeof v === 'string' && v.trim() !== '' ? v.trim() : undefined
   }
 
-  await createNotice(lectureId, {
+  await createNotice(user.uid, lectureId, {
     title: title.trim(),
     content: content.trim(),
     postedAt: getStr('postedAt'),

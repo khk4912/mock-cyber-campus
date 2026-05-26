@@ -16,6 +16,18 @@ function getCampusConfig () {
   }
 }
 
+type CampusErrorBody = {
+  error?: string | { message?: string }
+}
+
+function campusErrorMessage (body: CampusErrorBody | null, fallback: string) {
+  if (typeof body?.error === 'string') {
+    return body.error
+  }
+
+  return body?.error?.message ?? fallback
+}
+
 async function postCampus (path: string, payload: CampusPayload) {
   const { baseUrl, secret } = getCampusConfig()
   const response = await fetch(`${baseUrl}/campus/${path}`, {
@@ -28,50 +40,74 @@ async function postCampus (path: string, payload: CampusPayload) {
     cache: 'no-store',
   })
 
-  const body = await response.json().catch(() => null) as { error?: string } | null
+  const body = await response.json().catch(() => null) as CampusErrorBody | null
 
   if (!response.ok) {
-    throw new Error(body?.error ?? `Firebase campus sync failed with ${response.status}`)
+    throw new Error(campusErrorMessage(body, `Firebase campus sync failed with ${response.status}`))
   }
 }
 
+function campusContentPath (actorUid: string, courseId: string, collection: string) {
+  return `users/${encodeURIComponent(actorUid)}/courses/${encodeURIComponent(courseId)}/${collection}`
+}
+
 export async function syncCampusAssignment (payload: {
-  lectureId: string
+  actorUid: string
+  courseId: string
   assignmentId: string
   title: string
   description?: string
   dueAt: string
-  link?: string
+  linkUrl?: string
 }) {
-  await postCampus('assignments', payload)
+  await postCampus(campusContentPath(payload.actorUid, payload.courseId, 'assignments'), {
+    assignment_id: payload.assignmentId,
+    course_id: payload.courseId,
+    title: payload.title,
+    description: payload.description,
+    due_at: payload.dueAt,
+    link_url: payload.linkUrl,
+  })
 }
 
 export async function syncCampusVod (payload: {
-  lectureId: string
+  actorUid: string
+  courseId: string
   vodId: string
   title: string
   content?: string
-  uploadAt: string
+  openedAt: string
   dueAt: string
-  url?: string
+  linkUrl?: string
 }) {
-  await postCampus('vods', {
-    lectureId: payload.lectureId,
-    vodId: payload.vodId,
+  await postCampus(campusContentPath(payload.actorUid, payload.courseId, 'vods'), {
+    vod_id: payload.vodId,
+    course_id: payload.courseId,
     title: payload.title,
-    url: payload.url,
-    uploadAt: payload.uploadAt,
-    dueAt: payload.dueAt,
+    content: payload.content,
+    opened_at: payload.openedAt,
+    due_at: payload.dueAt,
+    link_url: payload.linkUrl,
   })
 }
 
 export async function syncCampusNotice (payload: {
-  lectureId: string
+  actorUid: string
+  courseId: string
   noticeId: string
   title: string
   content: string
   type: 'urgent' | 'exam' | 'makeup' | 'etc'
-  createdAt?: string
+  postedAt?: string
+  linkUrl?: string
 }) {
-  await postCampus('notices', payload)
+  await postCampus(campusContentPath(payload.actorUid, payload.courseId, 'notices'), {
+    notice_id: payload.noticeId,
+    course_id: payload.courseId,
+    title: payload.title,
+    content: payload.content,
+    type: payload.type,
+    posted_at: payload.postedAt,
+    link_url: payload.linkUrl,
+  })
 }

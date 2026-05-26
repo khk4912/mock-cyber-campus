@@ -10,6 +10,7 @@ export type AlarmSettings = {
 
 export type MockUser = {
   id: number
+  uid: string
   userId: string
   username: string
   displayName: string
@@ -220,6 +221,7 @@ function mapUser (user: MockUser): MockUser {
   return {
     ...user,
     id: requireNumericId(user.id, 'user.id'),
+    uid: user.uid ?? user.userId,
     studentId: user.studentId ?? null,
     fcmToken: user.fcmToken ?? null,
     alarmSettings: user.alarmSettings ?? DEFAULT_ALARM_SETTINGS,
@@ -403,6 +405,7 @@ export function getFreeTime (_userId: string): Promise<FreeTime | null> {
 }
 
 export async function createLmsLecture (
+  actorUid: string,
   courseId: number,
   data: { title: string; content?: string; openedAt: string; deadline: string; linkUrl?: string }
 ): Promise<LmsLectureSummary> {
@@ -419,19 +422,21 @@ export async function createLmsLecture (
   }
 
   await syncCampusVod({
-    lectureId: lecture.courseId,
+    actorUid,
+    courseId: lecture.courseId,
     vodId: lecture.lmsLectureId,
     title: lecture.title,
     content: lecture.content ?? undefined,
-    uploadAt: normalizeDateInput(lecture.openedAt),
+    openedAt: normalizeDateInput(lecture.openedAt),
     dueAt: normalizeDateInput(lecture.deadline),
-    url: lecture.linkUrl ?? undefined,
+    linkUrl: lecture.linkUrl ?? undefined,
   })
 
   return lecture
 }
 
 export async function createAssignment (
+  actorUid: string,
   courseId: number,
   data: { title: string; description?: string; deadline: string; linkUrl?: string }
 ): Promise<Assignment> {
@@ -439,12 +444,13 @@ export async function createAssignment (
   const nextId = Math.max(1000, ...assignments.map((assignment) => assignment.id)) + 1
 
   await syncCampusAssignment({
-    lectureId: String(courseId),
+    actorUid,
+    courseId: String(courseId),
     assignmentId: String(nextId),
     title: data.title,
     description: data.description,
     dueAt: normalizeDateInput(data.deadline),
-    link: data.linkUrl,
+    linkUrl: data.linkUrl,
   })
 
   return {
@@ -460,6 +466,7 @@ export async function createAssignment (
 }
 
 export async function createNotice (
+  actorUid: string,
   courseId: number,
   data: { title: string; content: string; postedAt?: string; linkUrl?: string; type?: 'urgent' | 'exam' | 'makeup' | 'etc' }
 ): Promise<LmsNoticeSummary> {
@@ -468,12 +475,14 @@ export async function createNotice (
   const postedAt = data.postedAt ?? new Date().toISOString()
 
   await syncCampusNotice({
-    lectureId: String(courseId),
+    actorUid,
+    courseId: String(courseId),
     noticeId: nextId,
     title: data.title,
     content: data.content,
     type: data.type ?? 'etc',
-    createdAt: normalizeDateInput(postedAt),
+    postedAt: normalizeDateInput(postedAt),
+    linkUrl: data.linkUrl,
   })
 
   return {
