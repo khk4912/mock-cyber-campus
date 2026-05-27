@@ -1,14 +1,14 @@
 # 그룹 게시판과 일정 함수
 
-이 문서는 팀 화면의 게시판, 게시글 상세, 캘린더, 일정 추가 화면에서 사용하는 callable
-함수를 설명합니다. 모든 함수는 로그인한 사용자가 해당 팀의 활성 멤버일 때만 동작합니다.
+이 문서는 그룹 화면의 게시판, 게시글 상세, 캘린더, 일정 추가 화면에서 사용하는 callable
+함수를 설명합니다. 모든 함수는 로그인한 사용자가 해당 그룹의 활성 멤버일 때만 동작합니다.
 
 ## create_group_post
 
-팀 게시글을 생성합니다. 게시글은 일반 글, 파일, 링크, 투표, 할 일을 같은 모델로
+그룹 게시글을 생성합니다. 게시글은 일반 글, 파일, 링크, 투표, 할 일을 같은 모델로
 저장합니다.
 
-- 권한: 팀 멤버 필요
+- 권한: 그룹 멤버 필요
 - 요청: `group_id`, `post`
 - 응답: `post_id`
 - 관련 경로: `groups/{groupId}/posts/{postId}`
@@ -44,10 +44,10 @@ suspend fun createGroupPost(groupId: String): String {
 
 ## list_group_posts
 
-팀 게시글 목록을 가져옵니다. 서버는 전체 목록, 고정글 목록, 날짜별 section을 함께
+그룹 게시글 목록을 가져옵니다. 서버는 전체 목록, 고정글 목록, 날짜별 section을 함께
 반환합니다.
 
-- 권한: 팀 멤버 필요
+- 권한: 그룹 멤버 필요
 - 요청: `group_id`, 선택 `post_type`, `status`, `query`
 - 응답: `posts`, `pinned`, `sections`
 - 관련 경로: `groups/{groupId}/posts`
@@ -68,40 +68,40 @@ suspend fun listGroupPosts(groupId: String): Map<*, *> {
 
 게시글 상세 화면에 필요한 단일 게시글을 가져옵니다.
 
-- 권한: 팀 멤버 필요
+- 권한: 그룹 멤버 필요
 - 요청: `group_id`, `post_id`
 - 응답: 게시글 map
 - 관련 경로: `groups/{groupId}/posts/{postId}`
 
 ## update_group_post
 
-작성자 또는 팀 owner가 게시글을 수정합니다.
+작성자 또는 그룹 owner가 게시글을 수정합니다.
 
-- 권한: 작성자 또는 팀 owner
+- 권한: 작성자 또는 그룹 owner
 - 요청: `group_id`, `post_id`, `post`
 - 응답: `post_id`
 
 ## delete_group_post
 
-작성자 또는 팀 owner가 게시글을 삭제합니다.
+작성자 또는 그룹 owner가 게시글을 삭제합니다.
 
-- 권한: 작성자 또는 팀 owner
+- 권한: 작성자 또는 그룹 owner
 - 요청: `group_id`, `post_id`
 - 응답: `post_id`
 
 ## pin_group_post
 
-팀 owner가 게시글의 고정 상태를 변경합니다.
+그룹 owner가 게시글의 고정 상태를 변경합니다.
 
-- 권한: 팀 owner
+- 권한: 그룹 owner
 - 요청: `group_id`, `post_id`, `pinned`
 - 응답: `post_id`, `pinned`
 
 ## create_group_schedule
 
-팀 캘린더에 일정을 추가합니다.
+그룹 캘린더에 일정을 추가합니다.
 
-- 권한: 팀 멤버 필요
+- 권한: 그룹 멤버 필요
 - 요청: `group_id`, `schedule`
 - 응답: `schedule_id`
 - 관련 경로: `groups/{groupId}/schedules/{scheduleId}`
@@ -130,10 +130,10 @@ suspend fun createGroupSchedule(groupId: String): String {
 
 ## list_group_schedules
 
-팀 일정을 기간별로 가져옵니다. 캘린더 화면은 `start_date`, `end_date`로 월 범위를
+그룹 일정을 기간별로 가져옵니다. 캘린더 화면은 `start_date`, `end_date`로 월 범위를
 보내면 됩니다.
 
-- 권한: 팀 멤버 필요
+- 권한: 그룹 멤버 필요
 - 요청: `group_id`, 선택 `start_date`, `end_date`, `status`
 - 응답: `schedules`, `sections`
 - 관련 경로: `groups/{groupId}/schedules`
@@ -160,22 +160,22 @@ suspend fun listGroupSchedules(groupId: String): Map<*, *> {
 
 일정 하나를 가져옵니다.
 
-- 권한: 팀 멤버 필요
+- 권한: 그룹 멤버 필요
 - 요청: `group_id`, `schedule_id`
 - 응답: 일정 map
 
 ## update_group_schedule
 
-작성자 또는 팀 owner가 일정을 수정합니다.
+작성자 또는 그룹 owner가 일정을 수정합니다.
 
-- 권한: 작성자 또는 팀 owner
+- 권한: 작성자 또는 그룹 owner
 - 요청: `group_id`, `schedule_id`, `schedule`
 - 응답: `schedule_id`
 
 ## delete_group_schedule
 
-작성자 또는 팀 owner가 일정을 삭제합니다.
+작성자 또는 그룹 owner가 일정을 삭제합니다.
 
-- 권한: 작성자 또는 팀 owner
+- 권한: 작성자 또는 그룹 owner
 - 요청: `group_id`, `schedule_id`
 - 응답: `schedule_id`

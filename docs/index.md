@@ -12,7 +12,7 @@ introduction
 callables/users
 callables/courses
 callables/course-content
-callables/teams
+callables/groups
 callables/group-board
 callables/members
 callables/notifications

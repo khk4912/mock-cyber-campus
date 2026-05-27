@@ -1,11 +1,11 @@
-# 팀 함수
+# 그룹 함수
 
-이 문서는 강의 안에서 팀을 만들고, 팀 멤버를 관리하고, 팀원들의 공통 가능 시간대를
-찾는 callable 함수를 설명합니다.
+이 문서는 강의 안에서 그룹을 만들고, 그룹 멤버를 관리하고, 그룹원들의 공통 가능
+시간대를 찾는 callable 함수를 설명합니다.
 
-## create_team
+## create_group
 
-현재 로그인한 사용자가 특정 강의 안에서 팀을 생성합니다. 생성자는 팀 owner로 자동
+현재 로그인한 사용자가 특정 강의 안에서 그룹을 생성합니다. 생성자는 그룹 owner로 자동
 등록됩니다.
 
 - 권한: 로그인 필요, 강의 멤버 필요
@@ -15,7 +15,7 @@
   `users/{uid}/groups/{groupId}`
 
 ```kotlin
-suspend fun createTeam(courseId: String, name: String): String {
+suspend fun createGroup(courseId: String, name: String): String {
     val payload = hashMapOf(
         "course_id" to courseId,
         "name" to name
@@ -23,7 +23,7 @@ suspend fun createTeam(courseId: String, name: String): String {
 
     val result = FirebaseFunctions
         .getInstance("asia-northeast3")
-        .getHttpsCallable("create_team")
+        .getHttpsCallable("create_group")
         .call(payload)
         .await()
 
@@ -37,7 +37,7 @@ suspend fun createTeam(courseId: String, name: String): String {
 ```json
 {
   "course_id": "course-appserver-2026",
-  "name": "A팀"
+  "name": "모바일프로그래밍 3그룹"
 }
 ```
 
@@ -52,20 +52,20 @@ suspend fun createTeam(courseId: String, name: String): String {
 `course_id` 또는 `name`이 없으면 `INVALID_ARGUMENT`, 강의 멤버가 아니면
 `PERMISSION_DENIED` 오류가 발생합니다.
 
-## list_teams
+## list_groups
 
-현재 로그인한 사용자가 속한 활성 팀 목록을 가져옵니다.
+현재 로그인한 사용자가 속한 활성 그룹 목록을 가져옵니다.
 
 - 권한: 로그인 필요
 - 요청: 빈 객체
-- 응답: 팀 marker 배열
+- 응답: 그룹 marker 배열
 - 관련 경로: `users/{uid}/groups/{groupId}`
 
 ```kotlin
-suspend fun listTeams(): List<*> {
+suspend fun listGroups(): List<*> {
     val result = FirebaseFunctions
         .getInstance("asia-northeast3")
-        .getHttpsCallable("list_teams")
+        .getHttpsCallable("list_groups")
         .call(emptyMap<String, Any>())
         .await()
 
@@ -81,9 +81,9 @@ suspend fun listTeams(): List<*> {
 ```json
 [
   {
-    "group_id": "team-alpha",
+    "group_id": "group-alpha",
     "course_id": "course-appserver-2026",
-    "name": "A팀",
+    "name": "모바일프로그래밍 3그룹",
     "role": "owner",
     "status": "active",
     "updated_at": "<server timestamp>"
@@ -91,22 +91,22 @@ suspend fun listTeams(): List<*> {
 ]
 ```
 
-## get_team
+## get_group
 
-`group_id`로 팀 상세 정보와 활성 멤버 목록을 가져옵니다.
+`group_id`로 그룹 상세 정보와 활성 멤버 목록을 가져옵니다.
 
-- 권한: 로그인 필요, 팀 멤버 필요
+- 권한: 로그인 필요, 그룹 멤버 필요
 - 요청: `group_id`
-- 응답: 팀 문서와 `members`
+- 응답: 그룹 문서와 `members`
 - 관련 경로: `groups/{groupId}`, `groups/{groupId}/members/{uid}`
 
 ```kotlin
-suspend fun getTeam(groupId: String): Map<*, *> {
+suspend fun getGroup(groupId: String): Map<*, *> {
     val payload = hashMapOf("group_id" to groupId)
 
     val result = FirebaseFunctions
         .getInstance("asia-northeast3")
-        .getHttpsCallable("get_team")
+        .getHttpsCallable("get_group")
         .call(payload)
         .await()
 
@@ -114,24 +114,13 @@ suspend fun getTeam(groupId: String): Map<*, *> {
 }
 ```
 
-요청입니다.
-
-```json
-{
-  "group_id": "team-alpha"
-}
-```
-
 응답입니다.
 
-함수는 `groups/{groupId}` 문서의 `to_dict()` 결과에 활성 멤버 배열 `members`를
-추가해서 반환합니다.
-
 ```json
 {
-  "group_id": "team-alpha",
+  "group_id": "group-alpha",
   "course_id": "course-appserver-2026",
-  "name": "A팀",
+  "name": "모바일프로그래밍 3그룹",
   "owner_uid": "student-kim",
   "status": "active",
   "created_at": "<server timestamp>",
@@ -148,21 +137,21 @@ suspend fun getTeam(groupId: String): Map<*, *> {
 }
 ```
 
-팀이 없거나 활성 상태가 아니면 `NOT_FOUND`, 팀 멤버가 아니면 `PERMISSION_DENIED`
-오류가 발생합니다.
+그룹이 없거나 활성 상태가 아니면 `NOT_FOUND`, 그룹 멤버가 아니면
+`PERMISSION_DENIED` 오류가 발생합니다.
 
-## add_team_member
+## add_group_member
 
-팀 owner가 같은 강의의 활성 멤버를 팀에 추가합니다.
+그룹 owner가 같은 강의의 활성 멤버를 그룹에 추가합니다.
 
-- 권한: 로그인 필요, 팀 owner 필요
+- 권한: 로그인 필요, 그룹 owner 필요
 - 요청: `group_id`, `target_uid`
 - 응답: `group_id`, `target_uid`
 - 관련 경로: `groups/{groupId}/members/{targetUid}`,
   `users/{targetUid}/groups/{groupId}`
 
 ```kotlin
-suspend fun addTeamMember(groupId: String, targetUid: String): Map<*, *> {
+suspend fun addGroupMember(groupId: String, targetUid: String): Map<*, *> {
     val payload = hashMapOf(
         "group_id" to groupId,
         "target_uid" to targetUid
@@ -170,7 +159,7 @@ suspend fun addTeamMember(groupId: String, targetUid: String): Map<*, *> {
 
     val result = FirebaseFunctions
         .getInstance("asia-northeast3")
-        .getHttpsCallable("add_team_member")
+        .getHttpsCallable("add_group_member")
         .call(payload)
         .await()
 
@@ -178,39 +167,21 @@ suspend fun addTeamMember(groupId: String, targetUid: String): Map<*, *> {
 }
 ```
 
-요청입니다.
+대상 사용자가 같은 강의의 활성 멤버가 아니면 `PERMISSION_DENIED`, 이미 활성 그룹
+멤버이면 `ALREADY_EXISTS` 오류가 발생합니다.
 
-```json
-{
-  "group_id": "team-alpha",
-  "target_uid": "student-lee"
-}
-```
+## remove_group_member
 
-응답입니다.
+그룹 owner가 그룹 멤버를 제거합니다. 그룹 owner 자신은 제거할 수 없습니다.
 
-```json
-{
-  "group_id": "team-alpha",
-  "target_uid": "student-lee"
-}
-```
-
-대상 사용자가 같은 강의의 활성 멤버가 아니면 `PERMISSION_DENIED`, 이미 활성 팀 멤버이면
-`ALREADY_EXISTS` 오류가 발생합니다.
-
-## remove_team_member
-
-팀 owner가 팀 멤버를 제거합니다. 팀 owner 자신은 제거할 수 없습니다.
-
-- 권한: 로그인 필요, 팀 owner 필요
+- 권한: 로그인 필요, 그룹 owner 필요
 - 요청: `group_id`, `target_uid`
 - 응답: `group_id`, `target_uid`
 - 관련 경로: `groups/{groupId}/members/{targetUid}`,
   `users/{targetUid}/groups/{groupId}`
 
 ```kotlin
-suspend fun removeTeamMember(groupId: String, targetUid: String): Map<*, *> {
+suspend fun removeGroupMember(groupId: String, targetUid: String): Map<*, *> {
     val payload = hashMapOf(
         "group_id" to groupId,
         "target_uid" to targetUid
@@ -218,41 +189,23 @@ suspend fun removeTeamMember(groupId: String, targetUid: String): Map<*, *> {
 
     val result = FirebaseFunctions
         .getInstance("asia-northeast3")
-        .getHttpsCallable("remove_team_member")
+        .getHttpsCallable("remove_group_member")
         .call(payload)
         .await()
 
     return result.data as Map<*, *>
-}
-```
-
-요청입니다.
-
-```json
-{
-  "group_id": "team-alpha",
-  "target_uid": "student-lee"
-}
-```
-
-응답입니다.
-
-```json
-{
-  "group_id": "team-alpha",
-  "target_uid": "student-lee"
 }
 ```
 
 대상 멤버가 없으면 `NOT_FOUND`, owner를 제거하려고 하면 `FAILED_PRECONDITION` 오류가
 발생합니다.
 
-## get_team_time_candidates
+## get_group_time_candidates
 
-팀원들의 `free_time_masks`를 비교해 함께 가능한 시간 후보를 반환합니다. 후보는 가능한
+그룹원들의 `free_time_masks`를 비교해 함께 가능한 시간 후보를 반환합니다. 후보는 가능한
 인원이 많은 순서, 같은 인원 수라면 요일과 시작 시간이 빠른 순서로 정렬됩니다.
 
-- 권한: 로그인 필요, 팀 멤버 필요
+- 권한: 로그인 필요, 그룹 멤버 필요
 - 요청: `group_id`, `duration_hours`, `top_k`
 - 응답: `candidates`
 - 관련 경로: `groups/{groupId}/members/{uid}`, `users/{uid}`
@@ -261,7 +214,7 @@ suspend fun removeTeamMember(groupId: String, targetUid: String): Map<*, *> {
 사용합니다.
 
 ```kotlin
-suspend fun getTeamTimeCandidates(groupId: String): List<*> {
+suspend fun getGroupTimeCandidates(groupId: String): List<*> {
     val payload = hashMapOf(
         "group_id" to groupId,
         "duration_hours" to 2,
@@ -270,22 +223,12 @@ suspend fun getTeamTimeCandidates(groupId: String): List<*> {
 
     val result = FirebaseFunctions
         .getInstance("asia-northeast3")
-        .getHttpsCallable("get_team_time_candidates")
+        .getHttpsCallable("get_group_time_candidates")
         .call(payload)
         .await()
 
     val data = result.data as Map<*, *>
     return data["candidates"] as List<*>
-}
-```
-
-요청입니다.
-
-```json
-{
-  "group_id": "team-alpha",
-  "duration_hours": 2,
-  "top_k": 10
 }
 ```
 
@@ -308,4 +251,4 @@ suspend fun getTeamTimeCandidates(groupId: String): List<*> {
 ```
 
 `day`는 `0..6` 범위이고, `start_hour`, `end_hour`는 24시간 기준 정수입니다.
-팀 멤버가 아니면 `PERMISSION_DENIED` 오류가 발생합니다.
+그룹 멤버가 아니면 `PERMISSION_DENIED` 오류가 발생합니다.
