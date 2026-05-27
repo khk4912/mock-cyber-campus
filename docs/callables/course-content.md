@@ -1,7 +1,8 @@
 # 강의 콘텐츠 함수
 
-이 문서는 과제, 공지사항, VOD callable 함수를 설명합니다. 조회 함수는 강의 멤버가
-호출할 수 있고, 생성 함수는 professor role 사용자만 호출할 수 있습니다.
+이 문서에서는 과제, 공지사항, VOD를 다루는 callable 함수들을 정리합니다. 조회 함수는
+강의 멤버라면 누구나 호출할 수 있고, 생성 함수는 professor role 사용자만 호출할 수
+있습니다.
 
 ## list_assignments
 
@@ -24,7 +25,7 @@ suspend fun listAssignments(courseId: String): List<*> {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -32,10 +33,10 @@ suspend fun listAssignments(courseId: String): List<*> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
-함수는 `courses/{courseId}/assignments` 하위 문서들의 `to_dict()` 배열을 반환합니다.
-문서 ID는 문서 필드에 저장되어 있지 않으면 응답에 포함되지 않습니다.
+`courses/{courseId}/assignments` 아래 문서들의 `to_dict()` 결과를 배열로 반환합니다.
+문서 ID는 문서 필드 안에 따로 저장되어 있지 않으면 응답에 포함되지 않습니다.
 
 ```json
 [
@@ -47,8 +48,8 @@ suspend fun listAssignments(courseId: String): List<*> {
 ]
 ```
 
-`course_id`가 없으면 `INVALID_ARGUMENT`, 강의 멤버가 아니면 `PERMISSION_DENIED`
-오류가 발생합니다.
+`course_id`를 빠뜨리면 `INVALID_ARGUMENT`, 강의 멤버가 아니면 `PERMISSION_DENIED`
+오류로 응답합니다.
 
 ## get_assignment
 
@@ -76,7 +77,7 @@ suspend fun getAssignment(courseId: String, assignmentId: String): Map<*, *> {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -85,9 +86,9 @@ suspend fun getAssignment(courseId: String, assignmentId: String): Map<*, *> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
-함수는 `courses/{courseId}/assignments/{assignmentId}` 문서를 `to_dict()`로 반환합니다.
+`courses/{courseId}/assignments/{assignmentId}` 문서를 `to_dict()` 결과로 그대로 반환합니다.
 
 ```json
 {
@@ -97,11 +98,11 @@ suspend fun getAssignment(courseId: String, assignmentId: String): Map<*, *> {
 }
 ```
 
-과제가 없으면 `NOT_FOUND` 오류가 발생합니다.
+과제가 없으면 `NOT_FOUND` 오류로 응답합니다.
 
 ## create_assignment
 
-특정 강의에 새 과제를 생성합니다.
+특정 강의에 새 과제를 등록합니다.
 
 - 권한: professor role 필요, 강의 멤버 필요
 - 요청: `course_id`, `assignment_data`
@@ -130,7 +131,7 @@ suspend fun createAssignment(courseId: String): String {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -143,7 +144,7 @@ suspend fun createAssignment(courseId: String): String {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
 ```json
 {
@@ -151,7 +152,7 @@ suspend fun createAssignment(courseId: String): String {
 }
 ```
 
-`course_id` 또는 `assignment_data`가 없으면 `INVALID_ARGUMENT` 오류가 발생합니다.
+`course_id`나 `assignment_data`가 빠지면 `INVALID_ARGUMENT` 오류로 응답합니다.
 
 ## list_notices
 
@@ -174,7 +175,7 @@ suspend fun listNotices(courseId: String): List<*> {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -182,10 +183,10 @@ suspend fun listNotices(courseId: String): List<*> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
-함수는 `courses/{courseId}/notices` 하위 문서들의 `to_dict()` 배열을 반환합니다.
-문서 ID는 문서 필드에 저장되어 있지 않으면 응답에 포함되지 않습니다.
+`courses/{courseId}/notices` 아래 문서들의 `to_dict()` 결과를 배열로 반환합니다.
+문서 ID는 문서 필드 안에 따로 저장되어 있지 않으면 응답에 포함되지 않습니다.
 
 ```json
 [
@@ -197,7 +198,7 @@ suspend fun listNotices(courseId: String): List<*> {
 ]
 ```
 
-강의 멤버가 아니면 `PERMISSION_DENIED` 오류가 발생합니다.
+강의 멤버가 아니면 `PERMISSION_DENIED` 오류로 응답합니다.
 
 ## get_notice
 
@@ -225,7 +226,7 @@ suspend fun getNotice(courseId: String, noticeId: String): Map<*, *> {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -234,9 +235,9 @@ suspend fun getNotice(courseId: String, noticeId: String): Map<*, *> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
-함수는 `courses/{courseId}/notices/{noticeId}` 문서를 `to_dict()`로 반환합니다.
+`courses/{courseId}/notices/{noticeId}` 문서를 `to_dict()` 결과로 그대로 반환합니다.
 
 ```json
 {
@@ -246,11 +247,11 @@ suspend fun getNotice(courseId: String, noticeId: String): Map<*, *> {
 }
 ```
 
-공지사항이 없으면 `NOT_FOUND` 오류가 발생합니다.
+공지사항이 없으면 `NOT_FOUND` 오류로 응답합니다.
 
 ## create_notice
 
-특정 강의에 새 공지사항을 생성합니다.
+특정 강의에 새 공지사항을 등록합니다.
 
 - 권한: professor role 필요, 강의 멤버 필요
 - 요청: `course_id`, `notice_data`
@@ -279,7 +280,7 @@ suspend fun createNotice(courseId: String): String {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -292,7 +293,7 @@ suspend fun createNotice(courseId: String): String {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
 ```json
 {
@@ -300,7 +301,7 @@ suspend fun createNotice(courseId: String): String {
 }
 ```
 
-`course_id` 또는 `notice_data`가 없으면 `INVALID_ARGUMENT` 오류가 발생합니다.
+`course_id`나 `notice_data`가 빠지면 `INVALID_ARGUMENT` 오류로 응답합니다.
 
 ## list_vods
 
@@ -323,7 +324,7 @@ suspend fun listVods(courseId: String): List<*> {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -331,10 +332,10 @@ suspend fun listVods(courseId: String): List<*> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
-함수는 `courses/{courseId}/vods` 하위 문서들의 `to_dict()` 배열을 반환합니다.
-문서 ID는 문서 필드에 저장되어 있지 않으면 응답에 포함되지 않습니다.
+`courses/{courseId}/vods` 아래 문서들의 `to_dict()` 결과를 배열로 반환합니다.
+문서 ID는 문서 필드 안에 따로 저장되어 있지 않으면 응답에 포함되지 않습니다.
 
 ```json
 [
@@ -346,7 +347,7 @@ suspend fun listVods(courseId: String): List<*> {
 ]
 ```
 
-강의 멤버가 아니면 `PERMISSION_DENIED` 오류가 발생합니다.
+강의 멤버가 아니면 `PERMISSION_DENIED` 오류로 응답합니다.
 
 ## get_vod
 
@@ -374,7 +375,7 @@ suspend fun getVod(courseId: String, vodId: String): Map<*, *> {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -383,9 +384,9 @@ suspend fun getVod(courseId: String, vodId: String): Map<*, *> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
-함수는 `courses/{courseId}/vods/{vodId}` 문서를 `to_dict()`로 반환합니다.
+`courses/{courseId}/vods/{vodId}` 문서를 `to_dict()` 결과로 그대로 반환합니다.
 
 ```json
 {
@@ -395,11 +396,11 @@ suspend fun getVod(courseId: String, vodId: String): Map<*, *> {
 }
 ```
 
-VOD가 없으면 `NOT_FOUND` 오류가 발생합니다.
+VOD가 없으면 `NOT_FOUND` 오류로 응답합니다.
 
 ## create_vod
 
-특정 강의에 새 VOD를 생성합니다.
+특정 강의에 새 VOD를 등록합니다.
 
 - 권한: professor role 필요, 강의 멤버 필요
 - 요청: `course_id`, `vod_data`
@@ -428,7 +429,7 @@ suspend fun createVod(courseId: String): String {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -441,7 +442,7 @@ suspend fun createVod(courseId: String): String {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
 ```json
 {
@@ -449,4 +450,4 @@ suspend fun createVod(courseId: String): String {
 }
 ```
 
-`course_id` 또는 `vod_data`가 없으면 `INVALID_ARGUMENT` 오류가 발생합니다.
+`course_id`나 `vod_data`가 빠지면 `INVALID_ARGUMENT` 오류로 응답합니다.

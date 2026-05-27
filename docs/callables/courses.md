@@ -1,11 +1,11 @@
 # 강의 함수
 
-이 문서는 강의 목록 조회, 상세 조회, 생성, 삭제 callable 함수를 설명합니다. 강의 생성과
-삭제는 professor role 사용자만 호출할 수 있습니다.
+이 문서에서는 강의 목록 조회, 상세 조회, 생성, 삭제와 관련된 callable 함수를 정리합니다.
+강의 생성과 삭제는 professor role 사용자만 호출할 수 있습니다.
 
 ## list_courses
 
-현재 로그인한 사용자가 수강하거나 강의 중인 활성 강의 목록을 가져옵니다.
+현재 로그인한 사용자가 수강 중이거나 강의 중인 활성 강의 목록을 가져옵니다.
 
 - 권한: 로그인 필요
 - 요청: 빈 객체
@@ -24,10 +24,10 @@ suspend fun listCourses(): List<*> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
-함수는 `users/{uid}/courses`의 활성 marker 문서를 `to_dict()`로 반환합니다.
-서버가 생성한 marker에는 `updated_at`이 포함됩니다.
+`users/{uid}/courses` 아래의 활성 marker 문서를 `to_dict()` 결과로 반환합니다.
+서버가 만든 marker에는 `updated_at`이 포함되어 있습니다.
 
 ```json
 [
@@ -44,7 +44,7 @@ suspend fun listCourses(): List<*> {
 
 ## get_course
 
-`course_id`로 강의 상세 정보를 가져옵니다. 호출자는 해당 강의의 활성 멤버여야 합니다.
+`course_id`로 강의의 상세 정보를 가져옵니다. 해당 강의의 활성 멤버만 호출할 수 있습니다.
 
 - 권한: 로그인 필요, 강의 멤버 필요
 - 요청: `course_id`
@@ -65,7 +65,7 @@ suspend fun getCourse(courseId: String): Map<*, *> {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -73,9 +73,9 @@ suspend fun getCourse(courseId: String): Map<*, *> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
-함수는 `courses/{courseId}` 문서를 `to_dict()`로 반환합니다.
+`courses/{courseId}` 문서를 `to_dict()` 결과로 그대로 반환합니다.
 
 ```json
 {
@@ -89,13 +89,13 @@ suspend fun getCourse(courseId: String): Map<*, *> {
 }
 ```
 
-`course_id`가 없으면 `INVALID_ARGUMENT`, 강의가 없으면 `NOT_FOUND`, 멤버가 아니면
-`PERMISSION_DENIED` 오류가 발생합니다.
+`course_id`를 빠뜨리면 `INVALID_ARGUMENT`, 강의 자체가 없으면 `NOT_FOUND`, 멤버가
+아니면 `PERMISSION_DENIED` 오류로 응답합니다.
 
 ## create_course
 
-새 강의를 생성합니다. 호출자는 professor role이어야 하며, 생성한 사용자가 강의 교수
-멤버로 자동 등록됩니다.
+새 강의를 만듭니다. 호출자는 professor role이어야 하며, 호출한 사용자는 해당 강의의
+교수 멤버로 자동 등록됩니다.
 
 - 권한: professor role 필요
 - 요청: `course_data`
@@ -124,7 +124,7 @@ suspend fun createCourse(): String {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -136,7 +136,7 @@ suspend fun createCourse(): String {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
 ```json
 {
@@ -144,13 +144,13 @@ suspend fun createCourse(): String {
 }
 ```
 
-`course_data`가 비어 있거나 객체가 아니면 `INVALID_ARGUMENT`, professor role이 아니면
-`PERMISSION_DENIED` 오류가 발생합니다.
+`course_data`가 비어 있거나 객체 형식이 아니면 `INVALID_ARGUMENT`, professor role이
+아니면 `PERMISSION_DENIED` 오류로 응답합니다.
 
 ## delete_course
 
-강의를 삭제 상태로 변경합니다. 실제 문서를 제거하지 않고 `status`를 `deleted`로 바꾸며,
-멤버 marker도 삭제 상태로 갱신합니다.
+강의를 삭제 상태로 표시합니다. 문서를 실제로 지우는 대신 `status`를 `deleted`로
+바꾸며, 멤버 marker도 함께 삭제 상태로 갱신합니다.
 
 - 권한: professor role 필요, 강의 owner 필요
 - 요청: `course_id`
@@ -172,7 +172,7 @@ suspend fun deleteCourse(courseId: String): Map<*, *> {
 }
 ```
 
-요청입니다.
+요청 예시는 다음과 같습니다.
 
 ```json
 {
@@ -180,7 +180,7 @@ suspend fun deleteCourse(courseId: String): Map<*, *> {
 }
 ```
 
-응답입니다.
+응답 예시는 다음과 같습니다.
 
 ```json
 {
@@ -188,5 +188,5 @@ suspend fun deleteCourse(courseId: String): Map<*, *> {
 }
 ```
 
-강의가 없거나 이미 삭제된 상태이면 `NOT_FOUND`, 호출자가 강의 owner가 아니면
-`PERMISSION_DENIED` 오류가 발생합니다.
+강의가 없거나 이미 삭제된 상태라면 `NOT_FOUND`, 호출자가 강의 owner가 아니면
+`PERMISSION_DENIED` 오류로 응답합니다.

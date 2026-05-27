@@ -1,8 +1,8 @@
 # MOA Firebase AppServer Docs
 
-이 문서는 Android Kotlin 앱에서 MOA Firebase AppServer를 사용하는 방법을 설명합니다.
+이 문서는 Android Kotlin 앱에서 MOA Firebase AppServer를 어떻게 사용하는지 설명합니다.
 Firebase Auth, Cloud Functions for Firebase, Cloud Firestore, Firebase Cloud Messaging을
-Kotlin 코드에서 호출하는 흐름을 기준으로 작성합니다.
+Kotlin 코드에서 호출하는 흐름을 중심으로 정리했습니다.
 
 ```{toctree}
 :maxdepth: 2
