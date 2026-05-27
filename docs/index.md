@@ -13,6 +13,7 @@ callables/users
 callables/courses
 callables/course-content
 callables/teams
+callables/group-board
 callables/members
 callables/notifications
 ```
